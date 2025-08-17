@@ -5,7 +5,7 @@ services:
     image: postgres:15-alpine
     restart: unless-stopped
     env_file:
-      - ../.env
+      - ../.env.development
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -14,42 +14,77 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - devnet
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
     ports:
       - "6379:6379"
     volumes:
       - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - devnet
 
   backend:
     image: node:18-alpine
     working_dir: /workspace
     env_file:
-      - ../.env
-    command: sh -c "npm install && npm run start:backend"
+      - ../.env.development
+    environment:
+      # Ensure backend loads the intended env file and connects to in-network services
+      DOTENV_CONFIG_PATH: /workspace/.env.development
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      REDIS_URL: redis://redis:6379
+      BACKEND_PORT: ${BACKEND_PORT:-4000}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+    command: sh -c "npm install && npm run dev:backend"
     volumes:
       - ..:/workspace:cached
     ports:
-      - "4000:4000"
+      - "${BACKEND_PORT:-4000}:4000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - devnet
 
   frontend:
     image: node:18-alpine
     working_dir: /workspace
     env_file:
-      - ../.env
-    command: sh -c "npm install && npm run start:frontend"
+      - ../.env.development
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:4000}
+      FRONTEND_PORT: ${FRONTEND_PORT:-3000}
+    command: sh -c "npm install && npm run dev:frontend"
     volumes:
       - ..:/workspace:cached
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+    networks:
+      - devnet
 
 volumes:
   pgdata:
   redisdata:
+
+networks:
+  devnet:
