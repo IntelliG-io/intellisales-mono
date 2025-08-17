@@ -7,11 +7,69 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Roles kept minimal; extensible later if needed
+enum Role {
+  ADMIN
+  MANAGER
+  CASHIER
+}
+
+model Tenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  stores Store[]
+  users  User[]
+
+  @@index([name])
+}
+
+model Store {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members StoreMember[]
+
+  // A tenant cannot have two stores with the same name
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  email        String
   passwordHash String
-  role         String   @default("cashier")
+  role         Role     @default(CASHIER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // Relations
+  tenant Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stores StoreMember[]
+
+  // Email unique within a tenant
+  @@unique([tenantId, email])
+  @@index([tenantId])
+}
+
+/// Explicit many-to-many to keep extensible (e.g., add roles per store later)
+model StoreMember {
+  storeId    String   @db.Uuid
+  userId     String   @db.Uuid
+  assignedAt DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([storeId, userId])
+  @@index([userId])
 }
