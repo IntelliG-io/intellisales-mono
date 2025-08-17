@@ -19,7 +19,11 @@
     "start:frontend": "npm start -w frontend",
     "test": "npm test -ws",
     "lint": "npm run lint -ws",
-    "build": "npm run build -ws"
+    "build": "npm run build -ws",
+    "db:push": "npm run db:push -w backend",
+    "prisma:generate": "npm run prisma:generate -w backend",
+    "migrate": "npm run prisma:migrate -w backend",
+    "seed": "npm run seed -w backend"
   },
   "license": "MIT"
 }

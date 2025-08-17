@@ -21,6 +21,26 @@ services:
     networks:
       - devnet
 
+  studio:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    working_dir: /workspace
+    env_file:
+      - ../.env.development
+    environment:
+      DATABASE_URL: postgres://${DB_USER:-pos_user}:${DB_PASSWORD:-pos_password}@db:5432/${DB_NAME:-pos_db}
+    command: sh -lc "npx prisma studio --schema backend/prisma/schema.prisma --hostname 0.0.0.0 --port 5555"
+    volumes:
+      - ..:/workspace:cached
+    ports:
+      - "5555:5555"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - devnet
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -38,7 +58,9 @@ services:
       - devnet
 
   backend:
-    image: node:18-alpine
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
     working_dir: /workspace
     env_file:
       - ../.env.development
