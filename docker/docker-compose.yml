@@ -7,9 +7,9 @@ services:
     env_file:
       - ../.env.development
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER:-pos_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pos_password}
+      POSTGRES_DB: ${DB_NAME:-pos_db}
     ports:
       - "5432:5432"
     volumes:
@@ -46,7 +46,7 @@ services:
     environment:
       # Ensure backend loads the intended env file and connects to in-network services
       DOTENV_CONFIG_PATH: /workspace/.env.development
-      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      DATABASE_URL: postgres://${DB_USER:-pos_user}:${DB_PASSWORD:-pos_password}@db:5432/${DB_NAME:-pos_db}
       REDIS_URL: redis://redis:6379
       BACKEND_PORT: ${BACKEND_PORT:-4000}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
