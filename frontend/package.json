@@ -1,0 +1,20 @@
+{
+  "name": "@pos/frontend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "POS frontend app (placeholder)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "echo \"No tests yet\" && exit 0",
+    "lint": "echo \"No linter configured\" && exit 0",
+    "build": "echo \"Nothing to build\" && exit 0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

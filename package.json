@@ -1,0 +1,25 @@
+{
+  "name": "pos-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "POS system monorepo containing backend, frontend, database, docker, and documentation.",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "install:all": "npm install",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "start:backend": "npm start -w backend",
+    "start:frontend": "npm start -w frontend",
+    "test": "npm test -ws",
+    "lint": "npm run lint -ws",
+    "build": "npm run build -ws"
+  },
+  "license": "MIT"
+}
