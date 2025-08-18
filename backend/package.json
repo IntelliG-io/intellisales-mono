@@ -21,6 +21,9 @@
     "postinstall": "prisma generate",
     "seed": "ts-node src/scripts/seed.ts"
   },
+  "prisma": {
+    "seed": "ts-node src/scripts/seed.ts"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
