@@ -23,7 +23,9 @@
     "db:push": "npm run db:push -w backend",
     "prisma:generate": "npm run prisma:generate -w backend",
     "migrate": "npm run prisma:migrate -w backend",
-    "seed": "npm run seed -w backend"
+    "prisma:deploy": "npm run prisma:deploy -w backend",
+    "seed": "npm run seed -w backend",
+    "verify": "npm run verify -w backend"
   },
   "prisma": {
     "seed": "npm run seed -w backend"

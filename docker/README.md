@@ -86,12 +86,18 @@ Common commands (run from repo root):
 # Generate Prisma Client
 npm run prisma:generate
 
-# Apply schema (or use migrate in dev)
-npm run db:push
+# Apply existing migrations to the database (safe for shared DBs)
+npm run prisma:deploy
+
+# Create and apply a new migration in development
+npm run migrate
+
+# Seed database (idempotent: upserts demo tenant/store/admin)
+npm run seed
+
+# Verify relationships, unique constraints, and cascade deletes
+npm run verify
 
 # Open Prisma Studio (via compose service)
 docker compose -f docker/docker-compose.yml up -d studio
-
-# Seed database (idempotent)
-npm run seed
 ```
