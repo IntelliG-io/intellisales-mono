@@ -25,5 +25,8 @@
     "migrate": "npm run prisma:migrate -w backend",
     "seed": "npm run seed -w backend"
   },
+  "prisma": {
+    "seed": "npm run seed -w backend"
+  },
   "license": "MIT"
 }
