@@ -41,6 +41,10 @@ This monorepo uses per-environment configuration files for backend (Node/Express
   - Optional:
     - `DB_CLIENT` (e.g., `postgres`)
     - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+  - Prisma runtime options (optional)
+    - `PRISMA_CONNECTION_LIMIT`: sets `connection_limit` query param on `DATABASE_URL` (e.g., `10`)
+    - `PRISMA_POOL_TIMEOUT`: sets `pool_timeout` query param on `DATABASE_URL` (ms, e.g., `10000`)
+    - `PRISMA_LOG_QUERIES`: if not `0`, enables query event logging in development
 
 - Cache / Queue (optional)
   - `REDIS_URL`: e.g., `redis://localhost:6379`
@@ -115,6 +119,11 @@ SESSION_SECRET=dev-session-change-me
 DATABASE_URL=postgres://pos_user:pos_password@localhost:5432/pos_db
 REDIS_URL=redis://localhost:6379
 COMPOSE_PROJECT_NAME=pos
+
+# Prisma options (optional)
+PRISMA_CONNECTION_LIMIT=10
+PRISMA_POOL_TIMEOUT=10000
+PRISMA_LOG_QUERIES=1
 ```
 
 `frontend/.env.development.local`:
