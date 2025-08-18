@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import registerRouter from './auth/register';
 import loginRouter from './auth/login';
+import meRouter from './auth/me';
 
 const router = Router();
 
@@ -17,3 +18,4 @@ export default router;
 // Mount auth routes
 router.use('/auth', registerRouter);
 router.use('/auth', loginRouter);
+router.use('/auth', meRouter);

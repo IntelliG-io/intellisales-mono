@@ -25,9 +25,9 @@ export async function authenticateJWT(
   const { token, malformed } = extractBearerToken(req);
   if (!token) {
     if (malformed) {
-      res.status(401).json({ status: 401, code: 'TOKEN_INVALID', message: 'Invalid or expired token' });
+      res.status(401).json({ status: 401, error: 'Unauthorized', code: 'TOKEN_INVALID', message: 'Invalid or missing authentication token.' });
     } else {
-      res.status(401).json({ status: 401, code: 'TOKEN_MISSING', message: 'Authorization token required' });
+      res.status(401).json({ status: 401, error: 'Unauthorized', code: 'TOKEN_MISSING', message: 'Invalid or missing authentication token.' });
     }
     return;
   }
@@ -46,26 +46,30 @@ export async function authenticateJWT(
     const payload: JwtPayload = typeof decoded === 'string' ? { sub: decoded } : decoded;
     const userId = payload.sub;
     if (!userId || typeof userId !== 'string') {
-      res.status(401).json({ status: 401, code: 'TOKEN_INVALID', message: 'Invalid or expired token' });
+      res.status(401).json({ status: 401, error: 'Unauthorized', code: 'TOKEN_INVALID', message: 'Invalid or missing authentication token.' });
       return;
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      res.status(404).json({ status: 404, code: 'USER_NOT_FOUND', message: 'User does not exist' });
+      res.status(404).json({ status: 404, error: 'Not Found', code: 'USER_NOT_FOUND', message: 'User does not exist' });
       return;
     }
 
     // Optional inactive check if model has this field
     const maybeActive = (user as unknown as { active?: boolean }).active;
     if (maybeActive === false) {
-      res.status(403).json({ status: 403, code: 'USER_INACTIVE', message: 'User account is inactive' });
+      res.status(403).json({ status: 403, error: 'Forbidden', code: 'USER_INACTIVE', message: 'User account is inactive' });
       return;
     }
 
     req.user = user;
     next();
-  } catch (_e) {
-    res.status(401).json({ status: 401, code: 'TOKEN_INVALID', message: 'Invalid or expired token' });
+  } catch (e: any) {
+    if (e && e.name === 'TokenExpiredError') {
+      res.status(401).json({ status: 401, error: 'Unauthorized', code: 'TOKEN_INVALID', message: 'Invalid or missing authentication token.' });
+      return;
+    }
+    res.status(401).json({ status: 401, error: 'Unauthorized', code: 'TOKEN_INVALID', message: 'Invalid or missing authentication token.' });
   }
 }

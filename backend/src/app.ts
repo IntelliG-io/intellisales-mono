@@ -19,6 +19,7 @@ app.use(createHttpLogger());
 // routes
 app.use(healthRouter); // exposes /health and /ready
 app.use('/v1', apiRouter);
+app.use('/api', apiRouter);
 
 // API documentation endpoints (keep existing)
 app.get('/docs.json', (_req: Request, res: Response) => {
