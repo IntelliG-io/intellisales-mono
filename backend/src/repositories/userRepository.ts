@@ -2,7 +2,7 @@ import type { Prisma, PrismaClient, User } from '@prisma/client';
 import { DuplicateError, DatabaseError } from './errors';
 
 export interface UserRepository {
-  findUserByEmail(email: string): Promise<User | null>;
+  findUserByEmail(tenantId: string, email: string): Promise<User | null>;
   createUser(data: Prisma.UserCreateInput): Promise<User>;
   findUserById(id: string): Promise<User | null>;
 }
@@ -20,8 +20,8 @@ function mapAndThrow(e: unknown, action: string): never {
 
 export function createUserRepository(prisma: PrismaClient): UserRepository {
   return {
-    async findUserByEmail(email: string): Promise<User | null> {
-      return prisma.user.findFirst({ where: { email } });
+    async findUserByEmail(tenantId: string, email: string): Promise<User | null> {
+      return prisma.user.findFirst({ where: { tenantId, email } });
     },
 
     async createUser(data: Prisma.UserCreateInput): Promise<User> {

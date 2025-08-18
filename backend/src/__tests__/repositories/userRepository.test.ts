@@ -47,7 +47,7 @@ describe('userRepository', () => {
     const { prisma, created } = makeMock();
     const repo = createUserRepository(prisma);
 
-    const found = await repo.findUserByEmail(created.email);
+    const found = await repo.findUserByEmail(created.tenantId, created.email);
     expect(found?.id).toBe('u1');
   });
 

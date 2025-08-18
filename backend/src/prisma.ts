@@ -120,13 +120,8 @@ function registerShutdown() {
     void shutdown('unhandledRejection');
   });
 
-  (prisma as any).$on('beforeExit', async () => {
-    try {
-      await prisma.$disconnect();
-    } catch {
-      // ignore
-    }
-  });
+  // Note: Prisma 5 library engine no longer supports the `$on('beforeExit')` hook.
+  // We rely on process-level signals registered above for graceful shutdown in Node.
 }
 
 registerShutdown();

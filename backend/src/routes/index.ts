@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import registerRouter from './auth/register';
 
 const router = Router();
 
@@ -11,3 +12,6 @@ router.post('/echo', (req, res) => {
 });
 
 export default router;
+
+// Mount auth routes
+router.use('/auth', registerRouter);
