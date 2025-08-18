@@ -36,6 +36,16 @@ This monorepo uses per-environment configuration files for backend (Node/Express
   - `SESSION_SECRET`: secret for session/cookies (if used)
   - Generate secrets: `openssl rand -base64 32`
 
+- Auth (bcrypt / JWT)
+  - `BCRYPT_SALT_ROUNDS`: number of bcrypt rounds (10–14 recommended; default 12)
+  - `ACCESS_TOKEN_TTL`: access token TTL (e.g., `15m`)
+  - `REFRESH_TOKEN_TTL`: refresh token TTL (e.g., `7d`)
+  - `JWT_ISSUER`: JWT issuer (e.g., `your-app`)
+  - `JWT_AUDIENCE`: JWT audience (e.g., `your-app-clients`)
+  - `JWT_CLOCK_TOLERANCE`: allowed clock skew when verifying (e.g., `5s`)
+  - `JWT_PRIVATE_KEY`: RSA private key (PEM) for RS256 (optional)
+  - `JWT_PUBLIC_KEY`: RSA public key (PEM) for RS256 (optional)
+
 - Database (Prisma / Postgres)
   - `DATABASE_URL` (required by Prisma): e.g., `postgres://user:pass@host:5432/db`
   - Optional:
@@ -116,6 +126,12 @@ API_BASE_URL=http://localhost:4000
 ALLOWED_ORIGINS=http://localhost:3000
 JWT_SECRET=dev-secret-change-me
 SESSION_SECRET=dev-session-change-me
+BCRYPT_SALT_ROUNDS=12
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=7d
+JWT_ISSUER=your-app
+JWT_AUDIENCE=your-app-clients
+JWT_CLOCK_TOLERANCE=5s
 DATABASE_URL=postgres://pos_user:pos_password@localhost:5432/pos_db
 REDIS_URL=redis://localhost:6379
 COMPOSE_PROJECT_NAME=pos
@@ -142,6 +158,12 @@ API_BASE_URL=http://localhost:4100
 ALLOWED_ORIGINS=http://localhost:3000
 JWT_SECRET=test-secret-change-me
 SESSION_SECRET=test-session-change-me
+BCRYPT_SALT_ROUNDS=10
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=7d
+JWT_ISSUER=your-app
+JWT_AUDIENCE=your-app-clients
+JWT_CLOCK_TOLERANCE=0s
 DATABASE_URL=postgres://pos_user:pos_password@localhost:5432/pos_db_test
 REDIS_URL=redis://localhost:6379
 COMPOSE_PROJECT_NAME=pos_test
@@ -163,6 +185,12 @@ API_BASE_URL=https://api.yourdomain.com
 ALLOWED_ORIGINS=https://app.yourdomain.com
 JWT_SECRET=<generated-strong-secret>
 SESSION_SECRET=<generated-strong-secret>
+BCRYPT_SALT_ROUNDS=12
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=7d
+JWT_ISSUER=your-app
+JWT_AUDIENCE=your-app-clients
+JWT_CLOCK_TOLERANCE=5s
 DATABASE_URL=postgres://user:pass@db-host:5432/prod_db
 REDIS_URL=redis://redis-host:6379
 COMPOSE_PROJECT_NAME=pos_prod

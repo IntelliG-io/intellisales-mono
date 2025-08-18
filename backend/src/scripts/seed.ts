@@ -2,8 +2,9 @@ import dotenv from 'dotenv';
 // Load env similar to server startup
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || '../.env' });
 
-import { PrismaClient, Role } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import { getBcryptSaltRounds } from '../config/env';
 
 const prisma = new PrismaClient();
 
@@ -25,7 +26,8 @@ async function main() {
     create: { tenantId: tenant.id, name: storeName },
   });
 
-  const passwordHash = await bcrypt.hash(adminPassword, 10);
+  const rounds = getBcryptSaltRounds();
+  const passwordHash = await bcrypt.hash(adminPassword, rounds);
 
   const user = await prisma.user.upsert({
     where: { tenantId_email: { tenantId: tenant.id, email: adminEmail } },
@@ -34,7 +36,7 @@ async function main() {
       tenantId: tenant.id,
       email: adminEmail,
       passwordHash,
-      role: Role.ADMIN,
+      role: 'ADMIN',
     },
   });
 
