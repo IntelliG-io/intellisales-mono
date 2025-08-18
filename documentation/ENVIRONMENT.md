@@ -2,7 +2,7 @@
 
 This monorepo uses per-environment configuration files for backend (Node/Express + Prisma) and frontend (Next.js 14). Sensitive files are gitignored; only `*.example` files and this documentation are tracked.
 
-- Backend reads environment via `dotenv` in `backend/src/index.ts`.
+- Backend reads environment via `dotenv` in `backend/src/server.ts`.
 - Frontend (Next.js) reads environment via Next's built-in env file support.
 
 ## Files and precedence
@@ -25,11 +25,21 @@ This monorepo uses per-environment configuration files for backend (Node/Express
   - `TZ`: server timezone (e.g., `UTC`)
   - `DOTENV_CONFIG_PATH`: which env file to load (e.g., `.env.development`)
 
-- Backend API
-  - `BACKEND_PORT`: backend HTTP port (e.g., `4000`)
+- Backend API / Server runtime
+  - `PORT`: backend HTTP port (preferred; falls back to `BACKEND_PORT` if unset)
+  - `BACKEND_PORT`: legacy port variable for compatibility (e.g., `4000`)
+  - `HOST`: host interface to bind (default `0.0.0.0`)
+  - `LOG_LEVEL`: pino log level (default `info`)
+  - `JSON_BODY_LIMIT`: express.json body size limit (default `1mb`)
+  - `TRUST_PROXY`: whether to trust proxy headers (true|false)
   - `BACKEND_URL`: public base URL for backend (used by Swagger/external services)
   - `API_BASE_URL`: base URL used in Swagger/OpenAPI docs if not provided
-  - `ALLOWED_ORIGINS`: comma-separated CORS origins (e.g., `http://localhost:3000`)
+
+- CORS
+  - `CORS_ORIGIN`: `*` or comma-separated list (e.g., `http://localhost:3000,https://app.example.com`)
+  - `CORS_METHODS`: allowed methods (default `GET,POST,PUT,PATCH,DELETE,OPTIONS`)
+  - `CORS_CREDENTIALS`: whether to allow credentials (true|false)
+  - `ALLOWED_ORIGINS`: legacy variable used as fallback if `CORS_ORIGIN` is not provided
 
 - Secrets
   - `JWT_SECRET`: secret for JWT signing (generate strong value)
@@ -120,9 +130,17 @@ npm run dev:frontend
 ```
 NODE_ENV=development
 TZ=UTC
+PORT=3000
+HOST=0.0.0.0
+LOG_LEVEL=info
+JSON_BODY_LIMIT=1mb
+TRUST_PROXY=false
 BACKEND_PORT=4000
 BACKEND_URL=http://localhost:4000
 API_BASE_URL=http://localhost:4000
+CORS_ORIGIN=http://localhost:3000
+CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+CORS_CREDENTIALS=false
 ALLOWED_ORIGINS=http://localhost:3000
 JWT_SECRET=dev-secret-change-me
 SESSION_SECRET=dev-session-change-me
@@ -152,9 +170,17 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 NODE_ENV=test
 TZ=UTC
+PORT=4100
+HOST=0.0.0.0
+LOG_LEVEL=info
+JSON_BODY_LIMIT=1mb
+TRUST_PROXY=false
 BACKEND_PORT=4100
 BACKEND_URL=http://localhost:4100
 API_BASE_URL=http://localhost:4100
+CORS_ORIGIN=http://localhost:3000
+CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+CORS_CREDENTIALS=false
 ALLOWED_ORIGINS=http://localhost:3000
 JWT_SECRET=test-secret-change-me
 SESSION_SECRET=test-session-change-me
@@ -179,9 +205,17 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ```
 NODE_ENV=production
 TZ=UTC
+PORT=4000
+HOST=0.0.0.0
+LOG_LEVEL=info
+JSON_BODY_LIMIT=1mb
+TRUST_PROXY=true
 BACKEND_PORT=4000
 BACKEND_URL=https://api.yourdomain.com
 API_BASE_URL=https://api.yourdomain.com
+CORS_ORIGIN=https://app.yourdomain.com
+CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+CORS_CREDENTIALS=false
 ALLOWED_ORIGINS=https://app.yourdomain.com
 JWT_SECRET=<generated-strong-secret>
 SESSION_SECRET=<generated-strong-secret>
@@ -211,5 +245,5 @@ NEXT_PUBLIC_APP_URL=https://app.yourdomain.com
 ## Notes
 
 - Prisma reads `DATABASE_URL` (see `backend/prisma/schema.prisma`).
-- Backend reads env here: `backend/src/index.ts` and supports `DOTENV_CONFIG_PATH`.
+- Backend reads env here: `backend/src/server.ts` and supports `DOTENV_CONFIG_PATH`.
 - Next.js loads frontend env files automatically by environment.

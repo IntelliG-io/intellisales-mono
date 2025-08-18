@@ -107,3 +107,33 @@ export function getJwtConfig(): JwtEnvConfig {
 
   return { issuer, audience, accessTtl, refreshTtl, clockToleranceSec, algorithm, secretOrPrivateKey, publicKey };
 }
+
+export interface ServerEnvConfig {
+  NODE_ENV: string;
+  PORT: number;
+  HOST: string;
+  LOG_LEVEL: string;
+  CORS_ORIGIN: string;
+  CORS_METHODS: string;
+  CORS_CREDENTIALS: boolean;
+  JSON_BODY_LIMIT: string;
+  TRUST_PROXY: boolean;
+  isProd: boolean;
+  isDev: boolean;
+}
+
+export function getServerEnv(): ServerEnvConfig {
+  const NODE_ENV = (process.env.NODE_ENV || 'development').trim();
+  const isProd = NODE_ENV === 'production';
+  const isDev = !isProd;
+  const PORT = Number.parseInt(process.env.PORT || process.env.BACKEND_PORT || '3000', 10) || 3000;
+  const HOST = (process.env.HOST || '0.0.0.0').trim();
+  const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').trim();
+  const CORS_ORIGIN = (process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS || '*').trim();
+  const CORS_METHODS = (process.env.CORS_METHODS || 'GET,POST,PUT,PATCH,DELETE,OPTIONS').trim();
+  const CORS_CREDENTIALS = String(process.env.CORS_CREDENTIALS || 'false').toLowerCase() === 'true';
+  const JSON_BODY_LIMIT = (process.env.JSON_BODY_LIMIT || '1mb').trim();
+  const TRUST_PROXY = String(process.env.TRUST_PROXY || 'false').toLowerCase() === 'true';
+
+  return { NODE_ENV, PORT, HOST, LOG_LEVEL, CORS_ORIGIN, CORS_METHODS, CORS_CREDENTIALS, JSON_BODY_LIMIT, TRUST_PROXY, isProd, isDev };
+}

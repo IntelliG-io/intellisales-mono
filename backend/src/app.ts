@@ -1,43 +1,43 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import { json, urlencoded } from 'express';
-import healthRouter from './routes/health';
-import authRouter from './routes/auth';
+import express, { type Request, type Response } from 'express';
 import * as swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
+import healthRouter from './routes/health';
+import apiRouter from './routes/index';
+import { applySecurity } from './middleware/security';
+import { createHttpLogger } from './middleware/logging';
+import { errorHandler, notFoundHandler } from './middleware/error';
+import { getServerEnv } from './config/env';
 
+const env = getServerEnv();
 const app = express();
 
-app.use(helmet());
-app.use(cors({ origin: (process.env.ALLOWED_ORIGINS || '*').split(',') }));
-app.use(json());
-app.use(urlencoded({ extended: true }));
+// security headers (helmet)
+applySecurity(app);
+// request id + logger
+app.use(createHttpLogger());
 
-app.use('/health', healthRouter);
-app.use('/auth', authRouter);
+// routes
+app.use(healthRouter); // exposes /health and /ready
+app.use('/v1', apiRouter);
 
-// API documentation endpoints
-app.get('/docs.json', (_req, res) => {
+// API documentation endpoints (keep existing)
+app.get('/docs.json', (_req: Request, res: Response) => {
   res.json(swaggerSpec);
 });
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.get('/docs', (_req, res) => {
+app.get('/docs', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/html');
-  // Override Helmet CSP for this route to allow ReDoc CDN and inline init script
-  res.setHeader(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' https://cdn.redoc.ly 'unsafe-inline'",
-      "style-src 'self' https: 'unsafe-inline'",
-      "img-src 'self' data: blob:",
-      "font-src 'self' https: data:",
-      "connect-src 'self'",
-      "worker-src 'self' blob:",
-      "child-src 'self' blob:",
-    ].join('; ')
-  );
+  const csp = env.isProd ? undefined : [
+    "default-src 'self'",
+    "script-src 'self' https://cdn.redoc.ly 'unsafe-inline'",
+    "style-src 'self' https: 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' https: data:",
+    "connect-src 'self'",
+    "worker-src 'self' blob:",
+    "child-src 'self' blob:",
+  ].join('; ');
+  if (csp) res.setHeader('Content-Security-Policy', csp);
   res.send(`<!DOCTYPE html>
   <html>
     <head>
@@ -50,7 +50,6 @@ app.get('/docs', (_req, res) => {
       <div id="redoc-container"></div>
       <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
       <script>
-        // Initialize ReDoc after the script loads
         document.addEventListener('DOMContentLoaded', function () {
           // @ts-ignore
           Redoc.init('/docs.json', {}, document.getElementById('redoc-container'));
@@ -60,25 +59,10 @@ app.get('/docs', (_req, res) => {
   </html>`);
 });
 
-app.get('/', (_req, res) => {
-  res.json({ status: 'ok', service: 'backend', time: new Date().toISOString() });
-});
+// 404 handler
+app.use(notFoundHandler);
 
-// Not found handler
-app.use((_req, res) => {
-  res.status(404).json({ error: 'Not Found' });
-});
-
-// Error handler
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  const status = err.status || 500;
-  const message = err.message || 'Internal Server Error';
-  if (process.env.NODE_ENV !== 'production') {
-    // eslint-disable-next-line no-console
-    console.error(err);
-  }
-  res.status(status).json({ error: message });
-});
+// error handler (last)
+app.use(errorHandler);
 
 export default app;
