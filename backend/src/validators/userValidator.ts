@@ -41,3 +41,28 @@ export function validateUserRegistration(input: unknown): UserRegistrationInput 
   }
   return parsed.data;
 }
+
+export const userLoginSchema = z
+  .object({
+    email: z
+      .string()
+      .email('Invalid email format')
+      .transform((v) => v.trim().toLowerCase()),
+    password: z.string().min(8, 'Password must be at least 8 characters').max(128, 'Password must be at most 128 characters'),
+  })
+  .strict();
+
+export type UserLoginInput = z.infer<typeof userLoginSchema>;
+
+export function validateUserLogin(input: unknown): UserLoginInput {
+  const parsed = userLoginSchema.safeParse(input);
+  if (!parsed.success) {
+    const details = parsed.error.flatten();
+    const err: any = new Error('Invalid input data');
+    err.code = 'VALIDATION_ERROR';
+    err.status = 400;
+    err.details = details;
+    throw err;
+  }
+  return parsed.data;
+}
