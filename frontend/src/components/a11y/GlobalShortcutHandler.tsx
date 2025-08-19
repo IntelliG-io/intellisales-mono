@@ -53,6 +53,22 @@ export default function GlobalShortcutHandler() {
       // Actions
       if (e.ctrlKey && !e.shiftKey) {
         switch (e.key.toLowerCase()) {
+          case 'd': // Focus dashboard overview
+            e.preventDefault()
+            if (pathname !== '/') {
+              go('/')
+              // allow navigation, focusing will occur after route change naturally when user interacts
+              return
+            }
+            {
+              const section = document.getElementById('section-1')
+              if (section) {
+                if (!section.getAttribute('tabindex')) section.setAttribute('tabindex', '-1')
+                ;(section as HTMLElement).focus({ preventScroll: true })
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            }
+            return
           case 'n': // New transaction
             e.preventDefault()
             go('/sales?new=1')
@@ -66,10 +82,29 @@ export default function GlobalShortcutHandler() {
             const el = document.getElementById('product-search') as HTMLInputElement | null
             if (el) el.focus()
             return
+          case '/': // Open command palette
+            e.preventDefault()
+            document.dispatchEvent(new CustomEvent('app:command'))
+            return
         }
       }
 
       // Context-free keys
+      // Quick jumps: number keys to sections on Dashboard (1-4)
+      if (!isTyping && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (pathname === '/' && ['1', '2', '3', '4'].includes(e.key)) {
+          e.preventDefault()
+          const id = `section-${e.key}`
+          const el = document.getElementById(id)
+          if (el) {
+            if (!el.getAttribute('tabindex')) el.setAttribute('tabindex', '-1')
+            ;(el as HTMLElement).focus({ preventScroll: true })
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+          return
+        }
+      }
+
       if (e.key === 'Escape') {
         document.dispatchEvent(new CustomEvent('app:cancel'))
         return

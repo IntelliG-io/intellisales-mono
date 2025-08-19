@@ -4,14 +4,16 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useRef } from 'react'
 import { cn } from '../../lib/utils'
+import { LayoutGrid, ShoppingCart, Package, Users, Truck, BarChart3, Settings } from 'lucide-react'
 
 const links = [
-  { href: '/', label: 'Dashboard' },
-  { href: '/sales', label: 'Sales' },
-  { href: '/inventory', label: 'Inventory' },
-  { href: '/customers', label: 'Customers' },
-  { href: '/reports', label: 'Reports' },
-  { href: '/help', label: 'Help' },
+  { href: '/', label: 'Dashboard', icon: LayoutGrid },
+  { href: '/sales', label: 'Sales', icon: ShoppingCart },
+  { href: '/inventory', label: 'Inventory', icon: Package },
+  { href: '/customers', label: 'Customers', icon: Users },
+  { href: '/purchase-orders', label: 'Purchase Orders', icon: Truck },
+  { href: '/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function Sidebar() {
@@ -50,6 +52,7 @@ export default function Sidebar() {
         <ul ref={listRef} onKeyDown={onKeyDown} className="flex flex-col gap-1">
           {links.map((l) => {
             const isActive = pathname === l.href
+            const Icon = l.icon
             return (
               <li key={l.href}>
                 <Link
@@ -58,11 +61,14 @@ export default function Sidebar() {
                   href={l.href}
                   aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    'focus-ring block rounded-md px-3 py-2 text-sm outline-none',
-                    isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'
+                    'focus-ring group flex items-center gap-2 rounded-md px-3 py-2 text-sm outline-none transition-colors border-l-2',
+                    isActive
+                      ? 'border-primary bg-muted/60 font-medium'
+                      : 'border-transparent text-foreground hover:bg-muted'
                   )}
                 >
-                  {l.label}
+                  {Icon ? <Icon className="h-4 w-4 text-muted-foreground group-data-[active=true]:text-foreground" aria-hidden="true" /> : null}
+                  <span>{l.label}</span>
                 </Link>
               </li>
             )

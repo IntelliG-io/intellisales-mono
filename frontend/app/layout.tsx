@@ -7,6 +7,7 @@ import Header from '../src/components/layout/Header'
 import GlobalShortcutHandler from '../src/components/a11y/GlobalShortcutHandler'
 import Toaster from '../src/components/ui/toaster'
 import Sidebar from '../src/components/layout/Sidebar'
+import CommandPalette from '../src/components/layout/CommandPalette'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <footer role="contentinfo" className="border-t border-border bg-background/80 px-4 py-6 text-sm text-muted-foreground">
             <div className="mx-auto max-w-7xl">© {new Date().getFullYear()} IntelliSales</div>
           </footer>
+          <CommandPalette />
           <Toaster />
         </Providers>
       </body>
