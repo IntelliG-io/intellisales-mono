@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { validateProductQuery } from '../../validators/productValidator'
-import { listProducts } from '../../services/productService'
+import { listProducts } from '../../services/products'
 
 export async function handleListProducts(req: Request, res: Response) {
   try {

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import { Prisma } from '@prisma/client'
 import { validateProductCreate } from '../../validators/productValidator'
-import { createProduct } from '../../services/productService'
+import { createProduct } from '../../services/products'
 import { HttpError } from '../../middleware/error'
 
 export async function handleCreateProduct(req: Request, res: Response) {

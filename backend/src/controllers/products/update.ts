@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import { Prisma } from '@prisma/client'
 import { validateProductUpdate } from '../../validators/productValidator'
-import { updateProduct } from '../../services/productService'
+import { updateProduct } from '../../services/products'
 import { HttpError } from '../../middleware/error'
 
 export async function handleUpdateProduct(req: Request, res: Response) {

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { validateUserRegistration } from '../../validators/userValidator'
-import { registerUser } from '../../services/authService'
+import { registerUser } from '../../services/auth'
 
 export async function handleRegister(req: Request, res: Response) {
   try {

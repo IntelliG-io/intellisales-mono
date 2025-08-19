@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { softDeleteProduct } from '../../services/productService'
+import { softDeleteProduct } from '../../services/products'
 import { HttpError } from '../../middleware/error'
 
 export async function handleDeleteProduct(req: Request, res: Response) {
