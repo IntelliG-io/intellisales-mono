@@ -1,18 +1,14 @@
 import { Router } from 'express';
 import authRouter from './auth/index';
 import productsRouter from './products';
+import systemRouter from './system';
 
 const router = Router();
 
-router.get('/echo', (req, res) => {
-  res.json({ method: 'GET', query: req.query, headers: req.headers });
-});
-
-router.post('/echo', (req, res) => {
-  res.json({ method: 'POST', body: req.body, headers: req.headers });
-});
-
 export default router;
+
+// Mount system routes (health, ready, echo)
+router.use(systemRouter);
 
 // Mount auth routes (exposes /auth/*)
 router.use(authRouter);
