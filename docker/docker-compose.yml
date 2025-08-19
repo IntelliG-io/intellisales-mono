@@ -70,10 +70,13 @@ services:
       DATABASE_URL: postgres://${DB_USER:-pos_user}:${DB_PASSWORD:-pos_password}@db:5432/${DB_NAME:-pos_db}
       REDIS_URL: redis://redis:6379
       BACKEND_PORT: ${BACKEND_PORT:-4000}
+      PORT: ${BACKEND_PORT:-4000}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
-    command: sh -c "npm install && npm run dev:backend"
+    command: sh -c "npm ci && npm run dev:backend"
     volumes:
       - ..:/workspace:cached
+      - backend_root_node_modules:/workspace/node_modules
+      - backend_workspace_node_modules:/workspace/backend/node_modules
     ports:
       - "${BACKEND_PORT:-4000}:4000"
     depends_on:
@@ -106,6 +109,8 @@ services:
 volumes:
   pgdata:
   redisdata:
+  backend_root_node_modules:
+  backend_workspace_node_modules:
 
 networks:
   devnet:
