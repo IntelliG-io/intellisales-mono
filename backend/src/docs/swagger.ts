@@ -11,7 +11,11 @@ const options = {
       version: '0.1.0',
       description: 'API documentation for the POS backend service',
     },
-    servers: [{ url: serverUrl }],
+    servers: [
+      { url: serverUrl },
+      { url: `${serverUrl}/v1` },
+      { url: `${serverUrl}/api` },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -22,7 +26,7 @@ const options = {
       },
     },
   },
-  apis: ['src/routes/*.ts'],
+  apis: ['src/routes/*.ts', 'src/routes/**/*.ts'],
 } satisfies Parameters<typeof swaggerJsdoc>[0];
 
 const swaggerSpec = swaggerJsdoc(options);
