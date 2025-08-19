@@ -130,6 +130,13 @@ apiClient.interceptors.response.use(
     const status = err.response?.status
 
     if ((status === 401 || status === 403)) {
+      // Don't redirect/reload on invalid login attempts so the form can show an inline error
+      const reqUrl = (originalRequest?.url ?? '').toString()
+      const isLoginRequest = reqUrl.includes('/auth/login')
+      if (status === 401 && isLoginRequest) {
+        return Promise.reject(toApiError(err))
+      }
+
       // Try refresh once on 401 if refresh token exists
       if (status === 401 && !originalRequest._retry) {
         originalRequest._retry = true
