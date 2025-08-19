@@ -1,4 +1,5 @@
 import prisma from '../../prisma'
+import { createProductRepository } from '../../repositories/productRepository'
 
 export interface ListParams {
   storeId?: string
@@ -10,19 +11,12 @@ export interface ListParams {
 
 export async function listProducts(params: ListParams) {
   const { storeId, category, q, page, limit } = params
-  const where = {
-    status: 'active',
-    ...(storeId ? { storeId } : {}),
-    ...(category ? { category } : {}),
-    ...(q ? { name: { contains: q, mode: 'insensitive' } } : {}),
-  }
+  const repo = createProductRepository(prisma)
 
-  const db: any = prisma
-
+  const filter = { status: 'active' as const, storeId, category, q }
   const [total, items] = await Promise.all([
-    db.product.count({ where }),
-    db.product.findMany({
-      where,
+    repo.count(filter),
+    repo.findMany(filter, {
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,

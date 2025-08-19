@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client'
 import prisma from '../../prisma'
+import { createProductRepository } from '../../repositories/productRepository'
 import { HttpError } from '../../middleware/error'
 import { ensureNameUniqueInStore, ensureCategoryValidForStore } from './common'
 
@@ -12,7 +13,8 @@ export interface UpdateInput {
 }
 
 export async function updateProduct(id: string, input: UpdateInput) {
-  const existing = await (prisma as any).product.findUnique({ where: { id } })
+  const repo = createProductRepository(prisma)
+  const existing = await repo.findById(id)
   if (!existing) throw new HttpError(404, 'PRODUCT_NOT_FOUND', 'Product not found')
 
   if (input.name && input.name !== existing.name) {
@@ -22,15 +24,13 @@ export async function updateProduct(id: string, input: UpdateInput) {
     await ensureCategoryValidForStore(existing.storeId, input.category)
   }
 
-  const updated = await (prisma as any).product.update({
-    where: { id },
-    data: {
-      ...(input.name ? { name: input.name } : {}),
-      ...(input.description !== undefined ? { description: input.description ?? null } : {}),
-      ...(input.price ? { price: new Prisma.Decimal(input.price) } : {}),
-      ...(input.category ? { category: input.category } : {}),
-      ...(input.status ? { status: input.status } : {}),
-    },
+  const updated = await repo.update(id, {
+    ...(input.name ? { name: input.name } : {}),
+    ...(input.description !== undefined ? { description: input.description ?? null } : {}),
+    ...(input.price ? { price: new Prisma.Decimal(input.price) } : {}),
+    ...(input.category ? { category: input.category } : {}),
+    ...(input.status ? { status: input.status } : {}),
   })
   return updated
 }
+

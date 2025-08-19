@@ -1,12 +1,14 @@
 import prisma from '../../prisma'
+import { createProductRepository } from '../../repositories/productRepository'
 import { HttpError } from '../../middleware/error'
 
 export async function softDeleteProduct(id: string) {
-  const existing = await (prisma as any).product.findUnique({ where: { id } })
+  const repo = createProductRepository(prisma)
+  const existing = await repo.findById(id)
   if (!existing) throw new HttpError(404, 'PRODUCT_NOT_FOUND', 'Product not found')
 
   if (existing.status === 'inactive') return existing
 
-  const updated = await (prisma as any).product.update({ where: { id }, data: { status: 'inactive' } })
+  const updated = await repo.softDelete(id)
   return updated
 }

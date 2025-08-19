@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client'
 import prisma from '../../prisma'
+import { createProductRepository } from '../../repositories/productRepository'
 import { ensureStoreExists, ensureNameUniqueInStore, ensureCategoryValidForStore } from './common'
 
 export interface CreateInput {
@@ -15,14 +16,13 @@ export async function createProduct(input: CreateInput) {
   await ensureNameUniqueInStore(input.storeId, input.name)
   await ensureCategoryValidForStore(input.storeId, input.category)
 
-  const created = await (prisma as any).product.create({
-    data: {
-      storeId: input.storeId,
-      name: input.name,
-      description: input.description ?? null,
-      price: new Prisma.Decimal(input.price),
-      category: input.category,
-    },
+  const repo = createProductRepository(prisma)
+  const created = await repo.create({
+    name: input.name,
+    description: input.description ?? null,
+    price: new Prisma.Decimal(input.price),
+    category: input.category,
+    store: { connect: { id: input.storeId } },
   })
   return created
 }
