@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { handleReady } from '../../controllers/system'
 
 const router = Router()
 
@@ -20,8 +21,6 @@ const router = Router()
  *                   type: string
  *                   example: ok
  */
-router.get('/ready', (_req, res) => {
-  res.json({ status: 'ok' })
-})
+router.get('/ready', handleReady)
 
 export default router

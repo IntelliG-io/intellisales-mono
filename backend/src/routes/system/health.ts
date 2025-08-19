@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { handleHealth } from '../../controllers/system'
 
 const router = Router()
 
@@ -24,8 +25,6 @@ const router = Router()
  *                 timestamp:
  *                   type: number
  */
-router.get('/health', (_req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() })
-})
+router.get('/health', handleHealth)
 
 export default router

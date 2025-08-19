@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { requireAuth } from '../../middleware/auth'
-import { handleListProducts } from '../../controllers/productController'
+import { handleListProducts } from '../../controllers/products'
 
 const router = Router()
 

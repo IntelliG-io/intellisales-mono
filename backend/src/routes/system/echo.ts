@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { handleEchoGet, handleEchoPost } from '../../controllers/system'
 
 const router = Router()
 
@@ -32,12 +33,8 @@ const router = Router()
  *             schema:
  *               type: object
  */
-router.get('/echo', (req, res) => {
-  res.json({ method: 'GET', query: req.query, headers: req.headers })
-})
+router.get('/echo', handleEchoGet)
 
-router.post('/echo', (req, res) => {
-  res.json({ method: 'POST', body: req.body, headers: req.headers })
-})
+router.post('/echo', handleEchoPost)
 
 export default router
