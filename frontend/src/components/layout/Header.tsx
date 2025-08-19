@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
+import { ThemeToggle } from '../ui/theme-toggle'
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const pathname = usePathname()
@@ -33,15 +36,16 @@ export default function Header() {
           <NavLink href="/login">Login</NavLink>
         </nav>
         <div className="flex items-center gap-2">
-          <label htmlFor="product-search" className="sr-only">
+          <Label htmlFor="product-search" className="sr-only">
             Search products
-          </label>
-          <input
+          </Label>
+          <Input
             id="product-search"
             type="search"
             placeholder="Search products..."
-            className="focus-ring h-9 w-64 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground"
+            className="w-64"
           />
+          <ThemeToggle />
         </div>
       </div>
     </header>

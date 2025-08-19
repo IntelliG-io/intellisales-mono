@@ -7,6 +7,8 @@ import { useAppDispatch } from '../src/store/hooks'
 import { restoreAuthState, logout, setError } from '../src/store/slices/authSlice'
 import { getAccessToken, clearAuthTokens } from '../api/apiClient'
 import { getProfile } from '../api/endpoints/userApi'
+import { ThemeProvider } from 'next-themes'
+import 'focus-visible'
 
 function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch()
@@ -54,7 +56,14 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
-      <AuthBootstrap>{children}</AuthBootstrap>
+      <ThemeProvider
+        attribute="data-theme"
+        defaultTheme="light"
+        enableSystem={false}
+        themes={['light', 'dark', 'hc']}
+      >
+        <AuthBootstrap>{children}</AuthBootstrap>
+      </ThemeProvider>
     </Provider>
   )
 }

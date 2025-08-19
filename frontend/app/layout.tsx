@@ -5,6 +5,8 @@ import Providers from './providers'
 import SkipLinks from '../src/components/a11y/SkipLinks'
 import Header from '../src/components/layout/Header'
 import GlobalShortcutHandler from '../src/components/a11y/GlobalShortcutHandler'
+import Toaster from '../src/components/ui/toaster'
+import Sidebar from '../src/components/layout/Sidebar'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -34,12 +36,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <GlobalShortcutHandler />
           <Header />
-          <main id="main-content" role="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-4">
-            {children}
-          </main>
+          <div className="mx-auto max-w-7xl px-4 py-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_1fr]">
+              <Sidebar />
+              <main id="main-content" role="main" tabIndex={-1} className="min-w-0">
+                {children}
+              </main>
+            </div>
+          </div>
           <footer role="contentinfo" className="border-t border-border bg-background/80 px-4 py-6 text-sm text-muted-foreground">
             <div className="mx-auto max-w-7xl">© {new Date().getFullYear()} IntelliSales</div>
           </footer>
+          <Toaster />
         </Providers>
       </body>
     </html>
