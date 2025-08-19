@@ -71,6 +71,9 @@ services:
       REDIS_URL: redis://redis:6379
       BACKEND_PORT: ${BACKEND_PORT:-4000}
       PORT: ${BACKEND_PORT:-4000}
+      # CORS: allow frontend and enable credentials (required for withCredentials)
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      CORS_CREDENTIALS: 'true'
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
     command: sh -c "npm ci && npm run dev:backend"
     volumes:
