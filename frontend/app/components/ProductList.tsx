@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import ProductCard from './ProductCard'
 import ProductFilters from './ProductFilters'
 import Button from './Button'
-import { ExclamationTriangleIcon, FolderOpenIcon } from '@heroicons/react/24/outline'
+import { AlertTriangle, FolderOpen } from 'lucide-react'
 import { fetchProducts, Product, ProductsResponse } from '../../lib/api/products'
 
 const PAGE_SIZE = 12
@@ -76,7 +76,7 @@ export default function ProductList() {
 
       {error && products.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-3 rounded-md border border-red-200 bg-red-50 p-6 text-center text-red-700">
-          <ExclamationTriangleIcon className="h-10 w-10" aria-hidden="true" />
+          <AlertTriangle className="h-10 w-10" aria-hidden="true" />
           <p className="text-sm">Failed to load products</p>
           <Button onClick={() => load(1)}>Retry</Button>
         </div>
@@ -84,7 +84,7 @@ export default function ProductList() {
 
       {!loading && !error && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-6 text-center text-gray-600">
-          <FolderOpenIcon className="h-10 w-10" aria-hidden="true" />
+          <FolderOpen className="h-10 w-10" aria-hidden="true" />
           <p className="text-sm">No products available</p>
         </div>
       )}

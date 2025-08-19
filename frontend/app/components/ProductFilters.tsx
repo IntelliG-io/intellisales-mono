@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { Search } from 'lucide-react'
 import Button from './Button'
 
 export type ProductFiltersProps = {
@@ -21,7 +21,7 @@ export default function ProductFilters({ search, setSearch, category, setCategor
           Search products
         </label>
         <div className="relative">
-          <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+          <Search className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-gray-400" aria-hidden="true" />
           <input
             id="product-search"
             type="text"

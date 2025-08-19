@@ -10,6 +10,7 @@ const config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    'lucide-react': '<rootDir>/__mocks__/lucide-react.tsx',
   },
 }
 
