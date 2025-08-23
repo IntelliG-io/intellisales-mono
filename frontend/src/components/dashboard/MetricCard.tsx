@@ -40,7 +40,7 @@ export default function MetricCard({ title, value, delta, icon, intent = 'defaul
       aria-label={`${title}: ${value}${delta ? `, ${delta}` : ''}`}
       onKeyDown={onKeyDown}
       onClick={handleActivate}
-      className={cn('focus-ring group overflow-hidden border-l-4 transition-colors', intentStyles[intent])}
+      className={cn('focus-ring group h-full overflow-hidden border-l-4 transition-colors', intentStyles[intent])}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>

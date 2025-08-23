@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { SimplePagination } from '../ui/pagination'
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
+import { Button } from '../ui/button'
+import { Plus, SlidersHorizontal } from 'lucide-react'
 
 interface Row {
   name: string
@@ -26,9 +29,31 @@ export default function TopProductsTable() {
   const pageCount = 1
 
   return (
-    <Card className="col-span-1 lg:col-span-2">
+    <Card className="col-span-1 md:col-span-2 lg:col-span-2 h-full">
       <CardHeader>
-        <CardTitle>Top Products</CardTitle>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <CardTitle>Top Products</CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            <Tabs defaultValue="outline" className="sm:max-w-[460px]">
+              <TabsList className="overflow-x-auto whitespace-nowrap">
+                <TabsTrigger value="outline">Outline</TabsTrigger>
+                <TabsTrigger value="past">Past Performance</TabsTrigger>
+                <TabsTrigger value="key">Key Personnel</TabsTrigger>
+                <TabsTrigger value="focus">Focus Documents</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="hidden sm:flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <SlidersHorizontal className="mr-2 h-4 w-4" /> Customize Columns
+              </Button>
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" /> Add Section
+              </Button>
+            </div>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="w-full overflow-x-auto">

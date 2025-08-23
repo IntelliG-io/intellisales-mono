@@ -58,7 +58,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <Provider store={store}>
       <ThemeProvider
         attribute="data-theme"
-        defaultTheme="light"
+        defaultTheme="dark"
         enableSystem={false}
         themes={['light', 'dark', 'hc']}
       >
