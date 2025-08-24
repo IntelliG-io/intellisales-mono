@@ -52,3 +52,30 @@ Tests:
 ```bash
 npm test -w backend
 ```
+
+## Architecture Overview
+
+* __Layered structure__: `routes/` (HTTP + Swagger) → `controllers/` (request orchestration) → `services/` (business logic) → `repositories/` (data access via Prisma).
+* __Error handling__: repositories map Prisma errors to `DuplicateError`, `NotFoundError`, `DatabaseError`; services/controllers convert to `HttpError` responses.
+
+## Repository Pattern
+
+* __Location__: `src/repositories/*`
+* __Purpose__: Encapsulate all Prisma access to improve testability and maintainability.
+* __Implemented__: `userRepository`, `storeRepository`, and `productRepository`.
+* __ProductRepository API__ (`src/repositories/productRepository.ts`):
+  - `findById`, `findFirstByName`, `findFirstByNameExcludingId`
+  - `findMany(filter, options)`, `count(filter)`
+  - `create(data)`, `update(id, data)`, `softDelete(id)`
+
+## Products Module
+
+* __Services__: `src/services/products/{list,create,update,remove}.ts`
+  - All refactored to use `createProductRepository(prisma)` instead of direct Prisma usage.
+  - Shared validation helpers in `src/services/products/common.ts` also use the repository.
+* __Controllers__: `src/controllers/products/*` call services; routes keep Swagger docs in `src/routes/products/*`.
+
+## Testing
+
+* __Unit tests__: under `src/__tests__/repositories/*` and route/controller tests under `src/__tests__/routes/*`.
+* Added `productRepository.test.ts` covering CRUD, filtering, pagination, soft delete, and error mapping.

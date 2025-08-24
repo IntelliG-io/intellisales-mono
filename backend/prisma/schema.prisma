@@ -37,6 +37,7 @@ model Store {
   // Relations
   tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   members StoreMember[]
+  products Product[]
 
   // A tenant cannot have two stores with the same name
   @@unique([tenantId, name])
@@ -72,4 +73,26 @@ model StoreMember {
 
   @@id([storeId, userId])
   @@index([userId])
+}
+
+/// Product catalog item belonging to a store. Designed for future extensibility.
+model Product {
+  id          String   @id @default(cuid())
+  storeId     String   @db.Uuid
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  category    String
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Common lookups
+  @@index([storeId])
+  @@index([category])
+  // Avoid duplicate product names within a store while allowing same name across stores
+  @@unique([storeId, name])
 }

@@ -1,8 +1,9 @@
 import express, { type Request, type Response } from 'express';
 import * as swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
-import healthRouter from './routes/health';
 import apiRouter from './routes/index';
+import health from './routes/system/health';
+import ready from './routes/system/ready';
 import { applySecurity } from './middleware/security';
 import { createHttpLogger } from './middleware/logging';
 import { errorHandler, notFoundHandler } from './middleware/error';
@@ -17,7 +18,8 @@ applySecurity(app);
 app.use(createHttpLogger());
 
 // routes
-app.use(healthRouter); // exposes /health and /ready
+app.use(health); // exposes /health
+app.use(ready); // exposes /ready
 app.use('/v1', apiRouter);
 app.use('/api', apiRouter);
 
