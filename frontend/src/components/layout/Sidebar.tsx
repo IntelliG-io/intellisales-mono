@@ -11,7 +11,7 @@ import {
   Users, 
   BarChart3, 
   Settings, 
-  CashRegister,
+  DollarSign,
   Receipt,
   TrendingUp,
   UserCheck,
@@ -26,7 +26,7 @@ const links = [
     category: 'Sales',
     items: [
       { href: '/', label: 'Dashboard', icon: LayoutGrid },
-      { href: '/pos', label: 'Point of Sale', icon: CashRegister },
+      { href: '/pos', label: 'Point of Sale', icon: DollarSign },
       { href: '/sales', label: 'Sales History', icon: Receipt },
       { href: '/discounts', label: 'Discounts', icon: Percent }
     ]

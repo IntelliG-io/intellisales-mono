@@ -9,10 +9,10 @@ const stores = [
   { id: 'store-3', name: 'Mall' },
 ]
 
-export default function StoreSelector() {
+export default function StoreSelector({ className }: { className?: string }) {
   const [value, setValue] = React.useState<string>('store-1')
   return (
-    <div className="w-40">
+    <div className={`w-32 sm:w-40 ${className || ''}`}>
       <Select value={value} onValueChange={setValue}>
         <SelectTrigger aria-label="Select store">
           <SelectValue placeholder="Select store" />

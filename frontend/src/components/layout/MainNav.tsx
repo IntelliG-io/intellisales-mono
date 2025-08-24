@@ -13,11 +13,11 @@ const items = [
   { href: '/reports', label: 'Reports', icon: BarChart3 },
 ]
 
-export default function MainNav() {
+export default function MainNav({ className }: { className?: string }) {
   const pathname = usePathname()
 
   return (
-    <nav id="site-nav" aria-label="Main" className="flex items-center gap-1">
+    <nav id="site-nav" aria-label="Main" className={cn("flex items-center gap-1", className)}>
       {items.map(({ href, label, icon: Icon }) => {
         const active = pathname === href
         return (
@@ -31,7 +31,7 @@ export default function MainNav() {
             )}
           >
             <Icon className="h-4 w-4" aria-hidden="true" />
-            <span>{label}</span>
+            <span className="hidden xl:inline">{label}</span>
           </Link>
         )
       })}

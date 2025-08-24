@@ -19,18 +19,21 @@ export default function DashboardGrid() {
   return (
     <div className="space-y-6">
       {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+      <div className="flex flex-wrap gap-2 sm:gap-3">
+        <button className="flex items-center gap-2 bg-primary text-primary-foreground px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm">
           <CreditCard className="h-4 w-4" />
-          New Sale
+          <span className="hidden sm:inline">New Sale</span>
+          <span className="sm:hidden">Sale</span>
         </button>
-        <button className="flex items-center gap-2 bg-muted text-foreground px-4 py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors">
+        <button className="flex items-center gap-2 bg-muted text-foreground px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm">
           <Package className="h-4 w-4" />
-          Add Product
+          <span className="hidden sm:inline">Add Product</span>
+          <span className="sm:hidden">Product</span>
         </button>
-        <button className="flex items-center gap-2 bg-muted text-foreground px-4 py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors">
+        <button className="flex items-center gap-2 bg-muted text-foreground px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm">
           <Users className="h-4 w-4" />
-          New Customer
+          <span className="hidden sm:inline">New Customer</span>
+          <span className="sm:hidden">Customer</span>
         </button>
       </div>
 

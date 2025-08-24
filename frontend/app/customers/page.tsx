@@ -1,5 +1,3 @@
-"use client"
-
 import PageWithShortcuts from '../../src/components/layout/PageWithShortcuts'
 
 export default function CustomersPage() {

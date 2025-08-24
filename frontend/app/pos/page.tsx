@@ -1,167 +1,409 @@
+"use client"
+
 import RouteGuard from '../components/RouteGuard'
 import PageWithShortcuts from '../../src/components/layout/PageWithShortcuts'
-import { Button } from '../../src/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../src/components/ui/card'
 import { Input } from '../../src/components/ui/input'
-import { 
-  ShoppingCart, 
-  Search, 
-  Scan,
-  CreditCard,
-  Banknote,
-  Receipt,
-  Trash2,
-  Plus,
-  Minus
-} from 'lucide-react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+
+interface CartItem {
+  id: string
+  productCode: string
+  name: string
+  price: number
+  qty: number
+  total: number
+}
+
+interface Product {
+  code: string
+  name: string
+  price: number
+  category: string
+}
+
+const products: Product[] = [
+  { code: "COF-SM", name: "Coffee - Small", price: 3.50, category: "Beverages" },
+  { code: "COF-MD", name: "Coffee - Medium", price: 4.50, category: "Beverages" },
+  { code: "COF-LG", name: "Coffee - Large", price: 5.50, category: "Beverages" },
+  { code: "MUF-BB", name: "Blueberry Muffin", price: 3.25, category: "Bakery" },
+  { code: "CRO-CH", name: "Chocolate Croissant", price: 4.75, category: "Bakery" },
+  { code: "SAN-TK", name: "Sandwich - Turkey", price: 8.95, category: "Food" }
+]
 
 export default function POSPage() {
-  const cartItems = [
-    { id: 1, name: "Coffee - Medium", price: 4.50, qty: 2 },
-    { id: 2, name: "Blueberry Muffin", price: 3.25, qty: 1 },
-    { id: 3, name: "Sandwich - Turkey", price: 8.95, qty: 1 }
-  ]
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [currentRow, setCurrentRow] = useState(0)
+  const [currentColumn, setCurrentColumn] = useState(0)
+  const [editingCell, setEditingCell] = useState<{row: number, col: number} | null>(null)
+  const [productLookup, setProductLookup] = useState('')
+  const [showLookup, setShowLookup] = useState(false)
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  const [selectedProductIndex, setSelectedProductIndex] = useState(0)
+  
+  const tableRef = useRef<HTMLTableElement>(null)
+  const lookupRef = useRef<HTMLInputElement>(null)
+  const cellRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
 
-  const products = [
-    { id: 1, name: "Coffee - Small", price: 3.50, category: "Beverages" },
-    { id: 2, name: "Coffee - Medium", price: 4.50, category: "Beverages" },
-    { id: 3, name: "Coffee - Large", price: 5.50, category: "Beverages" },
-    { id: 4, name: "Blueberry Muffin", price: 3.25, category: "Bakery" },
-    { id: 5, name: "Chocolate Croissant", price: 4.75, category: "Bakery" },
-    { id: 6, name: "Sandwich - Turkey", price: 8.95, category: "Food" }
-  ]
+  // Column definitions
+  const columns = ['Product Code', 'Description', 'Price', 'Qty', 'Total']
 
-  const total = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0)
+  // Add empty row if needed
+  useEffect(() => {
+    if (cartItems.length === 0 || cartItems[cartItems.length - 1].productCode !== '') {
+      const newItem: CartItem = {
+        id: Date.now().toString(),
+        productCode: '',
+        name: '',
+        price: 0,
+        qty: 0,
+        total: 0
+      }
+      setCartItems(prev => [...prev, newItem])
+    }
+  }, [cartItems])
+
+  // Product lookup filtering
+  useEffect(() => {
+    if (productLookup.trim()) {
+      const filtered = products.filter(p => 
+        p.code.toLowerCase().includes(productLookup.toLowerCase()) ||
+        p.name.toLowerCase().includes(productLookup.toLowerCase())
+      )
+      setFilteredProducts(filtered)
+      setSelectedProductIndex(0)
+    } else {
+      setFilteredProducts([])
+    }
+  }, [productLookup])
+
+  const addProduct = useCallback((product: Product, qty: number = 1) => {
+    const newItem: CartItem = {
+      id: Date.now().toString(),
+      productCode: product.code,
+      name: product.name,
+      price: product.price,
+      qty: qty,
+      total: product.price * qty
+    }
+    
+    setCartItems(prev => {
+      const items = [...prev]
+      if (currentRow < items.length) {
+        items[currentRow] = newItem
+      } else {
+        items.push(newItem)
+      }
+      return items
+    })
+    
+    setShowLookup(false)
+    setProductLookup('')
+    setCurrentRow(prev => prev + 1)
+    setCurrentColumn(0)
+  }, [currentRow])
+
+  const updateCartItem = useCallback((rowIndex: number, field: keyof CartItem, value: any) => {
+    setCartItems(prev => {
+      const items = [...prev]
+      const item = { ...items[rowIndex] }
+      
+      if (field === 'productCode' && value) {
+        const product = products.find(p => p.code === value)
+        if (product) {
+          item.productCode = product.code
+          item.name = product.name
+          item.price = product.price
+          item.qty = item.qty || 1
+          item.total = product.price * (item.qty || 1)
+        }
+      } else if (field === 'qty') {
+        item.qty = Math.max(0, parseFloat(value) || 0)
+        item.total = item.price * item.qty
+      } else if (field === 'price') {
+        item.price = Math.max(0, parseFloat(value) || 0)
+        item.total = item.price * item.qty
+      } else {
+        // Assign using a typed index to satisfy TS when using a dynamic keyof
+        ;(item as Record<keyof CartItem, any>)[field] = value
+      }
+      
+      items[rowIndex] = item
+      return items
+    })
+  }, [])
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (editingCell) return
+    
+    const maxRows = cartItems.length
+    const maxCols = columns.length - 1 // -1 because Total is calculated
+    
+    switch (e.key) {
+      case 'ArrowUp':
+        e.preventDefault()
+        setCurrentRow(prev => Math.max(0, prev - 1))
+        break
+      case 'ArrowDown':
+        e.preventDefault()
+        setCurrentRow(prev => Math.min(maxRows - 1, prev + 1))
+        break
+      case 'ArrowLeft':
+        e.preventDefault()
+        setCurrentColumn(prev => Math.max(0, prev - 1))
+        break
+      case 'ArrowRight':
+      case 'Tab':
+        e.preventDefault()
+        if (currentColumn < maxCols - 1) {
+          setCurrentColumn(prev => prev + 1)
+        } else {
+          setCurrentColumn(0)
+          setCurrentRow(prev => Math.min(maxRows - 1, prev + 1))
+        }
+        break
+      case 'Enter':
+        e.preventDefault()
+        if (currentColumn === 0) { // Product Code column
+          setShowLookup(true)
+          setTimeout(() => lookupRef.current?.focus(), 0)
+        } else {
+          setEditingCell({ row: currentRow, col: currentColumn })
+        }
+        break
+      case 'Delete':
+      case 'Backspace':
+        if (currentRow < cartItems.length && cartItems[currentRow].productCode) {
+          setCartItems(prev => prev.filter((_, idx) => idx !== currentRow))
+        }
+        break
+      case 'F4': // Quick payment
+        e.preventDefault()
+        handlePayment('cash')
+        break
+      case 'F5': // Card payment  
+        e.preventDefault()
+        handlePayment('card')
+        break
+    }
+  }, [currentRow, currentColumn, editingCell, cartItems.length, columns.length])
+
+  const handleLookupKeyDown = useCallback((e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowUp':
+        e.preventDefault()
+        setSelectedProductIndex(prev => Math.max(0, prev - 1))
+        break
+      case 'ArrowDown':
+        e.preventDefault()
+        setSelectedProductIndex(prev => Math.min(filteredProducts.length - 1, prev + 1))
+        break
+      case 'Enter':
+        e.preventDefault()
+        if (filteredProducts[selectedProductIndex]) {
+          addProduct(filteredProducts[selectedProductIndex])
+        }
+        break
+      case 'Escape':
+        e.preventDefault()
+        setShowLookup(false)
+        setProductLookup('')
+        break
+    }
+  }, [filteredProducts, selectedProductIndex, addProduct])
+
+  const handlePayment = useCallback((type: 'cash' | 'card') => {
+    // Payment processing logic here
+    console.log(`Processing ${type} payment`)
+    // Clear cart after payment
+    setCartItems([])
+    setCurrentRow(0)
+    setCurrentColumn(0)
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
+
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.total || 0), 0)
+  const tax = subtotal * 0.085
+  const total = subtotal + tax
 
   return (
     <RouteGuard>
       <PageWithShortcuts
-        title="Point of Sale"
-        description="Process sales transactions with our intuitive POS interface"
+        title="Point of Sale - Data Grid"
+        description="Keyboard-first POS interface. Use arrow keys to navigate, Enter to edit, F4 for cash, F5 for card."
       >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
-          {/* Product Selection */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Search and Scan */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input 
-                  placeholder="Search products..." 
-                  className="pl-10"
-                />
+        <div className="space-y-4">
+          {/* Instructions */}
+          <div className="bg-muted/50 p-3 rounded-lg text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div><kbd className="kbd">↑↓←→</kbd> Navigate</div>
+              <div><kbd className="kbd">Enter</kbd> Edit/Lookup</div>
+              <div><kbd className="kbd">Del</kbd> Remove item</div>
+              <div><kbd className="kbd">Tab</kbd> Next cell</div>
+              <div><kbd className="kbd">F4</kbd> Cash payment</div>
+              <div><kbd className="kbd">F5</kbd> Card payment</div>
+              <div><kbd className="kbd">Esc</kbd> Cancel</div>
+            </div>
+          </div>
+
+          {/* Main POS Grid */}
+          <div className="border rounded-lg overflow-hidden">
+            <table ref={tableRef} className="w-full">
+              <thead className="bg-muted">
+                <tr>
+                  {columns.map((col, idx) => (
+                    <th key={idx} className="text-left p-3 font-medium border-r border-border last:border-r-0">
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {cartItems.map((item, rowIdx) => (
+                  <tr 
+                    key={item.id}
+                    className={`border-t border-border ${currentRow === rowIdx ? 'bg-primary/5' : 'hover:bg-muted/30'}`}
+                  >
+                    {/* Product Code */}
+                    <td className={`p-2 border-r border-border font-mono ${currentRow === rowIdx && currentColumn === 0 ? 'bg-primary/10 ring-2 ring-primary' : ''}`}>
+                      {item.productCode || (currentRow === rowIdx && currentColumn === 0 ? '▶' : '')}
+                    </td>
+                    
+                    {/* Description */}
+                    <td className={`p-2 border-r border-border ${currentRow === rowIdx && currentColumn === 1 ? 'bg-primary/10 ring-2 ring-primary' : ''}`}>
+                      {editingCell?.row === rowIdx && editingCell?.col === 1 ? (
+                        <Input
+                          value={item.name}
+                          onChange={(e) => updateCartItem(rowIdx, 'name', e.target.value)}
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Escape') {
+                              setEditingCell(null)
+                            }
+                          }}
+                          className="h-8 border-0 p-1"
+                          autoFocus
+                        />
+                      ) : (
+                        item.name
+                      )}
+                    </td>
+                    
+                    {/* Price */}
+                    <td className={`p-2 border-r border-border text-right ${currentRow === rowIdx && currentColumn === 2 ? 'bg-primary/10 ring-2 ring-primary' : ''}`}>
+                      {editingCell?.row === rowIdx && editingCell?.col === 2 ? (
+                        <Input
+                          value={item.price.toString()}
+                          onChange={(e) => updateCartItem(rowIdx, 'price', e.target.value)}
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Escape') {
+                              setEditingCell(null)
+                            }
+                          }}
+                          className="h-8 border-0 p-1 text-right"
+                          autoFocus
+                        />
+                      ) : (
+                        item.price ? `$${item.price.toFixed(2)}` : ''
+                      )}
+                    </td>
+                    
+                    {/* Quantity */}
+                    <td className={`p-2 border-r border-border text-right ${currentRow === rowIdx && currentColumn === 3 ? 'bg-primary/10 ring-2 ring-primary' : ''}`}>
+                      {editingCell?.row === rowIdx && editingCell?.col === 3 ? (
+                        <Input
+                          value={item.qty.toString()}
+                          onChange={(e) => updateCartItem(rowIdx, 'qty', e.target.value)}
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Escape') {
+                              setEditingCell(null)
+                            }
+                          }}
+                          className="h-8 border-0 p-1 text-right"
+                          autoFocus
+                        />
+                      ) : (
+                        item.qty || ''
+                      )}
+                    </td>
+                    
+                    {/* Total */}
+                    <td className={`p-2 text-right font-medium ${currentRow === rowIdx && currentColumn === 4 ? 'bg-primary/10 ring-2 ring-primary' : ''}`}>
+                      {item.total ? `$${item.total.toFixed(2)}` : ''}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Totals Section */}
+          <div className="flex justify-end">
+            <div className="w-80 bg-muted/50 p-4 rounded-lg space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span className="font-mono">${subtotal.toFixed(2)}</span>
               </div>
-              <Button variant="outline" size="default" className="flex items-center gap-2">
-                <Scan className="h-4 w-4" />
-                Scan
-              </Button>
-            </div>
-
-            {/* Product Categories */}
-            <div className="flex gap-2 mb-4">
-              <Button variant="outline" size="sm">All</Button>
-              <Button variant="outline" size="sm">Beverages</Button>
-              <Button variant="outline" size="sm">Food</Button>
-              <Button variant="outline" size="sm">Bakery</Button>
-            </div>
-
-            {/* Product Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 overflow-auto">
-              {products.map((product) => (
-                <Card 
-                  key={product.id} 
-                  className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/20"
-                >
-                  <CardContent className="p-3">
-                    <div className="aspect-square bg-muted rounded-md mb-2 flex items-center justify-center">
-                      <div className="text-2xl">🛍️</div>
-                    </div>
-                    <h3 className="font-medium text-sm mb-1 line-clamp-2">{product.name}</h3>
-                    <p className="text-muted-foreground text-xs mb-2">{product.category}</p>
-                    <p className="font-bold text-primary">${product.price.toFixed(2)}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="flex justify-between">
+                <span>Tax (8.5%):</span>
+                <span className="font-mono">${tax.toFixed(2)}</span>
+              </div>
+              <div className="border-t pt-2">
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total:</span>
+                  <span className="font-mono">${total.toFixed(2)}</span>
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground pt-2">
+                Press <kbd className="kbd">F4</kbd> for Cash or <kbd className="kbd">F5</kbd> for Card
+              </div>
             </div>
           </div>
 
-          {/* Cart and Checkout */}
-          <div className="space-y-4">
-            {/* Cart */}
-            <Card className="h-fit">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <ShoppingCart className="h-5 w-5" />
-                  Current Sale
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {cartItems.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No items in cart</p>
-                ) : (
-                  <>
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="text-sm font-medium min-w-[20px] text-center">{item.qty}</span>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-500">
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Totals and Payment */}
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>${total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tax (8.5%):</span>
-                    <span>${(total * 0.085).toFixed(2)}</span>
-                  </div>
-                  <div className="border-t pt-2">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total:</span>
-                      <span>${(total * 1.085).toFixed(2)}</span>
+          {/* Product Lookup Modal */}
+          {showLookup && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-background border rounded-lg shadow-lg w-96 max-h-96">
+                <div className="p-4 border-b">
+                  <h3 className="font-medium">Product Lookup</h3>
+                  <Input
+                    ref={lookupRef}
+                    value={productLookup}
+                    onChange={(e) => setProductLookup(e.target.value)}
+                    onKeyDown={handleLookupKeyDown}
+                    placeholder="Type product code or name..."
+                    className="mt-2"
+                    autoFocus
+                  />
+                </div>
+                <div className="max-h-60 overflow-auto">
+                  {filteredProducts.map((product, idx) => (
+                    <div
+                      key={product.code}
+                      className={`p-3 border-b border-border cursor-pointer ${
+                        idx === selectedProductIndex ? 'bg-primary/10' : 'hover:bg-muted'
+                      }`}
+                      onClick={() => addProduct(product)}
+                    >
+                      <div className="font-medium">{product.code}</div>
+                      <div className="text-sm text-muted-foreground">{product.name}</div>
+                      <div className="text-sm font-medium">${product.price.toFixed(2)}</div>
                     </div>
-                  </div>
+                  ))}
+                  {productLookup && filteredProducts.length === 0 && (
+                    <div className="p-4 text-center text-muted-foreground">
+                      No products found
+                    </div>
+                  )}
                 </div>
-
-                <div className="space-y-2">
-                  <Button className="w-full flex items-center gap-2" size="lg">
-                    <CreditCard className="h-4 w-4" />
-                    Card Payment
-                  </Button>
-                  <Button variant="outline" className="w-full flex items-center gap-2" size="lg">
-                    <Banknote className="h-4 w-4" />
-                    Cash Payment
-                  </Button>
-                  <Button variant="ghost" className="w-full flex items-center gap-2">
-                    <Receipt className="h-4 w-4" />
-                    Print Receipt
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </div>
+          )}
         </div>
       </PageWithShortcuts>
     </RouteGuard>
