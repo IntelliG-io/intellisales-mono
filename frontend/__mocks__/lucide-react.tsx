@@ -24,5 +24,6 @@ function createMock(name: string) {
 export const Search = createMock('Search')
 export const AlertTriangle = createMock('AlertTriangle')
 export const FolderOpen = createMock('FolderOpen')
+export const RefreshCw = createMock('RefreshCw')
 
-export default { Search, AlertTriangle, FolderOpen }
+export default { Search, AlertTriangle, FolderOpen, RefreshCw }

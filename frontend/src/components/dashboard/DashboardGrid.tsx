@@ -1,8 +1,5 @@
 "use client"
 
-import MetricCard from './MetricCard'
-import SalesChartPlaceholder from './SalesChartPlaceholder'
-import TopProductsTable from './TopProductsTable'
 import { 
   ShoppingCart, 
   CreditCard, 
@@ -14,6 +11,10 @@ import {
   AlertTriangle,
   Clock
 } from 'lucide-react'
+
+import MetricCard from './MetricCard'
+import SalesChartPlaceholder from './SalesChartPlaceholder'
+import TopProductsTable from './TopProductsTable'
 
 export default function DashboardGrid() {
   return (

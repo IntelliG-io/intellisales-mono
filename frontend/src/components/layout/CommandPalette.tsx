@@ -1,8 +1,8 @@
 "use client"
 
-import * as React from 'react'
 import { Command } from 'cmdk'
 import { useRouter } from 'next/navigation'
+import * as React from 'react'
 
 export default function CommandPalette() {
   const [open, setOpen] = React.useState(false)

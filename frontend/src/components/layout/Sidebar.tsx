@@ -1,9 +1,5 @@
 "use client"
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import React, { useEffect, useRef } from 'react'
-import { cn } from '../../lib/utils'
 import { 
   LayoutGrid, 
   ShoppingCart, 
@@ -20,6 +16,11 @@ import {
   Archive,
   Percent
 } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import React, { useEffect, useRef } from 'react'
+
+import { cn } from '../../lib/utils'
 
 const links = [
   { 
@@ -34,8 +35,8 @@ const links = [
   {
     category: 'Inventory',
     items: [
-      { href: '/inventory', label: 'Products', icon: Package },
-      { href: '/inventory/stock', label: 'Stock Levels', icon: Archive },
+      { href: '/products', label: 'Products', icon: Package },
+      { href: '/inventory', label: 'Stock Levels', icon: Archive },
       { href: '/purchase-orders', label: 'Purchase Orders', icon: Truck }
     ]
   },

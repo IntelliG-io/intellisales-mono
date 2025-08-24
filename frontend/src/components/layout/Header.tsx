@@ -1,16 +1,18 @@
 "use client"
 
+import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useState } from 'react'
+
+import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { ThemeToggle } from '../ui/theme-toggle'
+
 import MainNav from './MainNav'
 import StoreSelector from './StoreSelector'
 import UserMenu from './UserMenu'
-import { Button } from '../ui/button'
-import { Menu, X } from 'lucide-react'
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const pathname = usePathname()

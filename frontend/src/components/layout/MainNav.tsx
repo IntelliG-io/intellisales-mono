@@ -1,14 +1,15 @@
 "use client"
 
+import { BarChart3, Package, ShoppingCart, Users, LayoutGrid } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+
 import { cn } from '../../lib/utils'
-import { BarChart3, Package, ShoppingCart, Users, LayoutGrid } from 'lucide-react'
 
 const items = [
   { href: '/', label: 'Dashboard', icon: LayoutGrid },
   { href: '/sales', label: 'Sales', icon: ShoppingCart },
-  { href: '/inventory', label: 'Inventory', icon: Package },
+  { href: '/products', label: 'Products', icon: Package },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
 ]

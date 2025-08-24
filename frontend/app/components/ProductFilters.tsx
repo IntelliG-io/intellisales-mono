@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
 import { Search } from 'lucide-react'
+import React from 'react'
+
 import Button from './Button'
 
 export type ProductFiltersProps = {

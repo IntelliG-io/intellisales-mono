@@ -1,13 +1,14 @@
 "use client"
 
-import * as React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { Badge } from '../ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { SimplePagination } from '../ui/pagination'
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
-import { Button } from '../ui/button'
 import { Plus, SlidersHorizontal } from 'lucide-react'
+import * as React from 'react'
+
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { SimplePagination } from '../ui/pagination'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 
 interface Row {
   name: string

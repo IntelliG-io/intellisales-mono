@@ -2,6 +2,7 @@
 
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+
 import { Button } from './button'
 
 const THEMES: Array<'light' | 'dark' | 'hc'> = ['light', 'dark', 'hc']

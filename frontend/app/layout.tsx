@@ -1,13 +1,15 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
-import Providers from './providers'
-import SkipLinks from '../src/components/a11y/SkipLinks'
-import Header from '../src/components/layout/Header'
+
 import GlobalShortcutHandler from '../src/components/a11y/GlobalShortcutHandler'
-import Toaster from '../src/components/ui/toaster'
-import Sidebar from '../src/components/layout/Sidebar'
+import SkipLinks from '../src/components/a11y/SkipLinks'
 import CommandPalette from '../src/components/layout/CommandPalette'
+import Header from '../src/components/layout/Header'
+import Sidebar from '../src/components/layout/Sidebar'
+import Toaster from '../src/components/ui/toaster'
+
+import Providers from './providers'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 

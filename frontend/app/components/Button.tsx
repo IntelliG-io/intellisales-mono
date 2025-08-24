@@ -1,8 +1,8 @@
 'use client'
 
+import clsx from 'clsx'
 import * as React from 'react'
 import { twMerge } from 'tailwind-merge'
-import clsx from 'clsx'
 
 export type ButtonProps = {
   children: React.ReactNode

@@ -1,15 +1,17 @@
 'use client'
 
+import { zodResolver } from '@hookform/resolvers/zod'
+import clsx from 'clsx'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 import { useForm } from 'react-hook-form'
+import { twMerge } from 'tailwind-merge'
 import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
+
+import { login as loginRequest } from '../../api/endpoints/authApi'
 import { useAppDispatch, useAppSelector } from '../../src/store/hooks'
 import { setError, setLoading } from '../../src/store/slices/authSlice'
-import { login as loginRequest } from '../../api/endpoints/authApi'
-import { useRouter } from 'next/navigation'
-import { twMerge } from 'tailwind-merge'
-import clsx from 'clsx'
+
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

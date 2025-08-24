@@ -1,13 +1,14 @@
 'use client'
 
+import { ThemeProvider } from 'next-themes'
 import React, { useEffect } from 'react'
 import { Provider } from 'react-redux'
+
+import { getAccessToken, clearAuthTokens } from '../api/apiClient'
+import { getProfile } from '../api/endpoints/userApi'
 import { store } from '../src/store'
 import { useAppDispatch } from '../src/store/hooks'
 import { restoreAuthState, logout, setError } from '../src/store/slices/authSlice'
-import { getAccessToken, clearAuthTokens } from '../api/apiClient'
-import { getProfile } from '../api/endpoints/userApi'
-import { ThemeProvider } from 'next-themes'
 import 'focus-visible'
 
 function AuthBootstrap({ children }: { children: React.ReactNode }) {

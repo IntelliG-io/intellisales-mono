@@ -1,7 +1,8 @@
-import RouteGuard from './components/RouteGuard'
+import DashboardGrid from '../src/components/dashboard/DashboardGrid'
 import PageWithShortcuts from '../src/components/layout/PageWithShortcuts'
 import { Button } from '../src/components/ui/button'
-import DashboardGrid from '../src/components/dashboard/DashboardGrid'
+
+import RouteGuard from './components/RouteGuard'
 
 export default function HomePage() {
   return (

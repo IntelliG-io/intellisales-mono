@@ -44,9 +44,9 @@ describe('ProductList', () => {
 
     render(<ProductList />)
 
-    expect(await screen.findByText('Failed to load products')).toBeInTheDocument()
+    expect(await screen.findByText('Unable to load products')).toBeInTheDocument()
 
-    const retry = screen.getByRole('button', { name: /retry/i })
+    const retry = screen.getByRole('button', { name: /try again/i })
     await userEvent.click(retry)
 
     expect(await screen.findByText('Apple')).toBeInTheDocument()
@@ -67,9 +67,13 @@ describe('ProductList', () => {
     const input = screen.getByLabelText(/search products/i)
     await userEvent.type(input, ' ap ')
 
+    // Wait for debounce
+    await waitFor(() => {
+      expect(screen.queryByText('Banana')).not.toBeInTheDocument()
+    }, { timeout: 1000 })
+    
     expect(screen.getByText('Apple')).toBeInTheDocument()
     expect(screen.getByText('Apricot')).toBeInTheDocument()
-    expect(screen.queryByText('Banana')).not.toBeInTheDocument()
   })
 
   test('category dropdown filters', async () => {
@@ -93,17 +97,19 @@ describe('ProductList', () => {
     await userEvent.type(screen.getByLabelText(/search products/i), 'ap')
     await userEvent.selectOptions(screen.getByLabelText(/category/i), 'Fruit')
 
+    // Wait for debounce and filtering
+    await waitFor(() => {
+      expect(screen.queryByText('Banana')).not.toBeInTheDocument()
+    }, { timeout: 1000 })
+
     expect(screen.getByText('Apple')).toBeInTheDocument()
     expect(screen.getByText('Apricot')).toBeInTheDocument()
-    expect(screen.queryByText('Banana')).not.toBeInTheDocument()
   })
 
   test('responsive grid has correct classes', async () => {
     ;(fetchProducts as jest.Mock).mockResolvedValue({ data: makeProducts(), page: 1, limit: 12, total: 3, totalPages: 1 })
     render(<ProductList />)
-    const grid = await screen.findByRole('region', { hidden: true })
-    // Fallback: locate by grid container class
-    const grids = document.querySelectorAll('.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3')
-    expect(grids.length).toBeGreaterThanOrEqual(1)
+    const grid = await screen.findByRole('region', { name: 'Products grid' })
+    expect(grid).toHaveClass('grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4', '2xl:grid-cols-6')
   })
 })
