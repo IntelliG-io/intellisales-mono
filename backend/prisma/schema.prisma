@@ -14,6 +14,40 @@ enum Role {
   CASHIER
 }
 
+/// Sale transaction status
+enum SaleStatus {
+  PENDING       // Sale initiated but not completed
+  COMPLETED     // Sale successfully completed
+  REFUNDED      // Sale has been refunded
+  PARTIALLY_REFUNDED // Sale has been partially refunded
+  CANCELLED     // Sale was cancelled
+  VOID          // Sale was voided (before completion)
+}
+
+/// Payment method types
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  DIGITAL_WALLET
+  GIFT_CARD
+  STORE_CREDIT
+  CHECK
+  OTHER
+}
+
+/// Payment status
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  SETTLED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CANCELLED
+}
+
 model Tenant {
   id        String   @id @default(uuid()) @db.Uuid
   name      String   @unique
@@ -35,9 +69,11 @@ model Store {
   updatedAt DateTime @updatedAt
 
   // Relations
-  tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  members StoreMember[]
-  products Product[]
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members   StoreMember[]
+  products  Product[]
+  sales     Sale[]
+  customers Customer[]
 
   // A tenant cannot have two stores with the same name
   @@unique([tenantId, name])
@@ -54,8 +90,9 @@ model User {
   updatedAt    DateTime @updatedAt
 
   // Relations
-  tenant Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  stores StoreMember[]
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stores        StoreMember[]
+  cashierSales  Sale[]        // Sales processed by this user as cashier
 
   // Email unique within a tenant
   @@unique([tenantId, email])
@@ -88,11 +125,195 @@ model Product {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store     Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  saleItems SaleItem[]
 
   // Common lookups
   @@index([storeId])
   @@index([category])
   // Avoid duplicate product names within a store while allowing same name across stores
   @@unique([storeId, name])
+}
+
+/// Main sales transaction entity
+model Sale {
+  id           String     @id @default(cuid())
+  saleNumber   String     @unique // Human-readable sale number (e.g., "INV-2024-001234")
+  storeId      String     @db.Uuid
+  cashierId    String     @db.Uuid // User who processed the sale
+  customerId   String?    @db.Uuid // Optional customer reference
+  
+  // Transaction details
+  status       SaleStatus @default(PENDING)
+  
+  // Financial calculations
+  subtotal     Decimal    @db.Decimal(10, 2) // Sum of all line items before tax/discount
+  taxAmount    Decimal    @db.Decimal(10, 2) @default(0) // Total tax amount
+  taxRate      Decimal    @db.Decimal(5, 4)  @default(0) // Tax rate applied (e.g., 0.0825 for 8.25%)
+  discountAmount Decimal  @db.Decimal(10, 2) @default(0) // Total discount amount
+  discountRate Decimal    @db.Decimal(5, 4)  @default(0) // Discount rate applied
+  totalAmount  Decimal    @db.Decimal(10, 2) // Final amount after tax and discount
+  
+  // Payment tracking
+  amountPaid   Decimal    @db.Decimal(10, 2) @default(0) // Total amount paid across all payments
+  amountDue    Decimal    @db.Decimal(10, 2) @default(0) // Remaining amount due
+  changeGiven  Decimal    @db.Decimal(10, 2) @default(0) // Change given to customer
+  
+  // Return/refund tracking
+  originalSaleId String?   // Reference to original sale for returns/refunds
+  refundedAmount Decimal   @db.Decimal(10, 2) @default(0) // Total amount refunded
+  
+  // Timestamps
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  completedAt  DateTime? // When the sale was completed
+  voidedAt     DateTime? // When the sale was voided
+  refundedAt   DateTime? // When the sale was refunded
+  
+  // Metadata
+  notes        String? // Additional notes about the sale
+  receiptData  Json? // Structured receipt data for reprinting
+  deviceInfo   Json? // POS device/terminal information
+  
+  // Relations
+  store        Store       @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  cashier      User        @relation(fields: [cashierId], references: [id], onDelete: Restrict)
+  customer     Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  originalSale Sale?       @relation("SaleReturns", fields: [originalSaleId], references: [id])
+  returnSales  Sale[]      @relation("SaleReturns")
+  items        SaleItem[]
+  payments     Payment[]
+  
+  // Indexes for performance
+  @@index([storeId])
+  @@index([cashierId])
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([saleNumber])
+  @@index([originalSaleId])
+}
+
+/// Individual line items within a sale
+model SaleItem {
+  id          String  @id @default(cuid())
+  saleId      String
+  productId   String // Reference to product
+  
+  // Item details (snapshot at time of sale)
+  productName String // Product name at time of sale
+  productCategory String? // Product category at time of sale
+  
+  // Pricing and quantity
+  unitPrice   Decimal @db.Decimal(10, 2) // Price per unit at time of sale
+  quantity    Decimal @db.Decimal(10, 3) // Quantity sold (supports fractional quantities)
+  lineTotal   Decimal @db.Decimal(10, 2) // Total for this line (unitPrice * quantity)
+  
+  // Discounts specific to this line item
+  discountAmount Decimal @db.Decimal(10, 2) @default(0)
+  discountRate   Decimal @db.Decimal(5, 4)  @default(0)
+  lineTotalAfterDiscount Decimal @db.Decimal(10, 2) // Line total after discount
+  
+  // Tax calculation for this line
+  taxAmount   Decimal @db.Decimal(10, 2) @default(0)
+  taxRate     Decimal @db.Decimal(5, 4)  @default(0)
+  taxableAmount Decimal @db.Decimal(10, 2) // Amount subject to tax
+  
+  // Return/refund tracking
+  returnedQuantity Decimal @db.Decimal(10, 3) @default(0) // Quantity returned
+  refundedAmount   Decimal @db.Decimal(10, 2) @default(0) // Amount refunded for this item
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Metadata
+  notes       String? // Notes specific to this line item
+  
+  // Relations
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  // Indexes
+  @@index([saleId])
+  @@index([productId])
+}
+
+/// Payment records for sales (supports split payments)
+model Payment {
+  id              String        @id @default(cuid())
+  saleId          String
+  
+  // Payment details
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  amount          Decimal       @db.Decimal(10, 2)
+  
+  // Payment processing
+  transactionId   String? // External transaction ID from payment processor
+  authorizationCode String? // Authorization code for card payments
+  cardLast4       String? // Last 4 digits of card number
+  cardType        String? // Card type (Visa, MasterCard, etc.)
+  
+  // Refund tracking
+  refundedAmount  Decimal       @db.Decimal(10, 2) @default(0)
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  authorizedAt    DateTime?
+  capturedAt      DateTime?
+  settledAt       DateTime?
+  refundedAt      DateTime?
+  
+  // Metadata
+  processorData   Json? // Raw data from payment processor
+  notes           String?
+  
+  // Relations
+  sale            Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  
+  // Indexes
+  @@index([saleId])
+  @@index([method])
+  @@index([status])
+  @@index([transactionId])
+}
+
+/// Customer information (optional for sales)
+model Customer {
+  id          String   @id @default(uuid()) @db.Uuid
+  storeId     String   @db.Uuid
+  
+  // Basic information
+  firstName   String?
+  lastName    String?
+  email       String?
+  phone       String?
+  
+  // Address information
+  address     String?
+  city        String?
+  state       String?
+  postalCode  String?
+  country     String?
+  
+  // Customer metrics
+  totalSpent  Decimal  @db.Decimal(12, 2) @default(0)
+  visitCount  Int      @default(0)
+  lastVisit   DateTime?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  sales       Sale[]
+  
+  // Indexes
+  @@index([storeId])
+  @@index([email])
+  @@index([phone])
+  @@unique([storeId, email]) // Email unique within store
 }
