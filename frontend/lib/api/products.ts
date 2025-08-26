@@ -6,6 +6,15 @@ export type Product = {
   price: string | number
   category: string
   status: 'active' | 'inactive'
+  description?: string
+}
+
+export type ProductCreateInput = {
+  name: string
+  description?: string
+  price: string | number
+  category: string
+  storeId: string
 }
 
 export type ProductsQuery = {
@@ -23,9 +32,12 @@ export type ProductsResponse = {
   totalPages: number
 }
 
-export async function fetchProducts(params: ProductsQuery = {}): Promise<ProductsResponse> {
+export async function fetchProducts(params: ProductsQuery = {}, storeId?: string): Promise<ProductsResponse> {
   try {
-    const res = await apiClient.get<ProductsResponse>('/api/products', { params })
+    // Add storeId to params if provided
+    const requestParams = storeId ? { ...params, storeId } : params
+    
+    const res = await apiClient.get<ProductsResponse>('/api/products', { params: requestParams })
     const raw = res.data as any
 
     // Normalize array response to paginated structure
@@ -51,6 +63,27 @@ export async function fetchProducts(params: ProductsQuery = {}): Promise<Product
     return normalized
   } catch (err: any) {
     const message = (err && err.message) || 'Failed to load products'
+    throw new Error(message)
+  }
+}
+
+export async function createProduct(input: ProductCreateInput): Promise<Product> {
+  try {
+    const res = await apiClient.post<Product>('/api/products', input)
+    
+    // Basic response validation
+    const product = res.data
+    if (!product || !product.id || !product.name || !product.category || !product.status) {
+      throw { message: 'Malformed product response' } as ApiError
+    }
+    
+    return product
+  } catch (err: any) {
+    // Re-throw API errors to preserve status codes and messages
+    if (err.status && err.message) {
+      throw err
+    }
+    const message = (err && err.message) || 'Failed to create product'
     throw new Error(message)
   }
 }

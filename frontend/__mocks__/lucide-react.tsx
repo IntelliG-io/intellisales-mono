@@ -25,5 +25,10 @@ export const Search = createMock('Search')
 export const AlertTriangle = createMock('AlertTriangle')
 export const FolderOpen = createMock('FolderOpen')
 export const RefreshCw = createMock('RefreshCw')
+export const Check = createMock('Check')
+export const X = createMock('X')
+export const AlertCircle = createMock('AlertCircle')
+export const Loader2 = createMock('Loader2')
+export const Plus = createMock('Plus')
 
-export default { Search, AlertTriangle, FolderOpen, RefreshCw }
+export default { Search, AlertTriangle, FolderOpen, RefreshCw, Check, X, AlertCircle, Loader2, Plus }

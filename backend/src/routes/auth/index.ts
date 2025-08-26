@@ -3,6 +3,7 @@ import register from './register'
 import login from './login'
 import me from './me'
 import refresh from './refresh'
+import stores from './stores'
 
 const router = Router()
 
@@ -26,5 +27,6 @@ router.use('/auth', register)
 router.use('/auth', login)
 router.use('/auth', me)
 router.use('/auth', refresh)
+router.use('/auth', stores)
 
 export default router

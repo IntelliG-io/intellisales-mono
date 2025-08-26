@@ -1,4 +1,5 @@
 import apiClient, { ApiError } from '../apiClient'
+import type { UserStore, UserStoresResponse } from '../../src/types/store'
 
 export type TenantInfo = {
   id: string
@@ -30,6 +31,17 @@ export type MeResponse = {
 export async function getProfile(): Promise<MeResponse> {
   try {
     const { data } = await apiClient.get<MeResponse>('/api/auth/me')
+    return data
+  } catch (err) {
+    throw err as ApiError
+  }
+}
+
+export type { UserStore, UserStoresResponse }
+
+export async function getUserStores(): Promise<UserStoresResponse> {
+  try {
+    const { data } = await apiClient.get<UserStoresResponse>('/api/auth/me/stores')
     return data
   } catch (err) {
     throw err as ApiError

@@ -4,6 +4,8 @@ import { AlertTriangle, FolderOpen, RefreshCw } from 'lucide-react'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { fetchProducts, Product, ProductsResponse } from '../../lib/api/products'
+import { useAppSelector } from '../../src/store/hooks'
+import { selectCurrentStore } from '../../src/store/slices/storeSlice'
 
 import Button from './Button'
 import ProductCard from './ProductCard'
@@ -24,6 +26,7 @@ function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
 }
 
 export default function ProductList() {
+  const currentStore = useAppSelector(selectCurrentStore)
   const [products, setProducts] = useState<Product[]>([])
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -52,6 +55,14 @@ export default function ProductList() {
   }, [products])
 
   const loadProducts = useCallback(async (pageToLoad: number, isLoadMore = false) => {
+    // Don't load if no store selected
+    if (!currentStore) {
+      setError('Please select a store to view products')
+      setLoading(false)
+      setLoadingMore(false)
+      return
+    }
+
     if (isLoadMore) {
       setLoadingMore(true)
     } else {
@@ -73,7 +84,7 @@ export default function ProductList() {
         params.category = category
       }
 
-      const resp: ProductsResponse = await fetchProducts(params)
+      const resp: ProductsResponse = await fetchProducts(params, currentStore.id)
       const activeOnly = resp.data.filter((p) => p.status === 'active')
       
       setProducts((prev) => (pageToLoad === 1 ? activeOnly : [...prev, ...activeOnly]))
@@ -87,7 +98,7 @@ export default function ProductList() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [debouncedSearch, category])
+  }, [debouncedSearch, category, currentStore])
 
   useEffect(() => {
     loadProducts(1)

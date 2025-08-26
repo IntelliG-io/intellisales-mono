@@ -9,6 +9,7 @@ import { getProfile } from '../api/endpoints/userApi'
 import { store } from '../src/store'
 import { useAppDispatch } from '../src/store/hooks'
 import { restoreAuthState, logout, setError } from '../src/store/slices/authSlice'
+import { fetchUserStores, clearStoreState } from '../src/store/slices/storeSlice'
 import 'focus-visible'
 
 function AuthBootstrap({ children }: { children: React.ReactNode }) {
@@ -33,15 +34,19 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
               name: res.user.name,
               roles: res.user.role ? [res.user.role] : [],
             }))
+            // Fetch user stores after successful auth
+            dispatch(fetchUserStores())
           } else {
             clearAuthTokens()
             dispatch(logout())
+            dispatch(clearStoreState())
           }
         }
       } catch (e: any) {
         clearAuthTokens()
         if (mounted) {
           dispatch(logout())
+          dispatch(clearStoreState())
           dispatch(setError('Session expired. Please sign in again.'))
         }
       }
